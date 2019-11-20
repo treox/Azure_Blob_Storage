@@ -17,42 +17,52 @@ namespace AzureBlobstorage
         static void Main(string[] args)
         {
             string path = @"C:\Users\aslan.DESKTOP-T1ACL15\Documents\Min studie\Hackarton\Azure_Blob_Storage\AzureBlobstorage\";
-            //String strorageconn = System.Configuration.ConfigurationSettings.AppSettings.Get("DefaultEndpointsProtocol=https;AccountName=evryhackathon2017storage;AccountKey=PwSmSHZ0OmdBOLyz3Ygd4o8n7e5PKVxtM5Zk7fBLad0bhQM0FISpFADiXzGl2SVYupV4VKI9WJHgQwXIkYiMmg==;EndpointSuffix=core.windows.net");
             CloudStorageAccount storageacc = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=evryhackathon2017storage;AccountKey=PwSmSHZ0OmdBOLyz3Ygd4o8n7e5PKVxtM5Zk7fBLad0bhQM0FISpFADiXzGl2SVYupV4VKI9WJHgQwXIkYiMmg==;EndpointSuffix=core.windows.net");
 
             //Create Reference to Azure Blob
             CloudBlobClient blobClient = storageacc.CreateCloudBlobClient();
-
-            //The next 2 lines create if not exists a container named "democontainer"
-            CloudBlobContainer container = blobClient.GetContainerReference("democontainer");
+            CloudBlobContainer container = blobClient.GetContainerReference("images");
 
             container.CreateIfNotExists();
 
-            //The next 7 lines upload the file test.txt with the name DemoBlob on the container "democontainer"
-            CloudBlockBlob blockBlob = container.GetBlockBlobReference("Images");
             Console.Write("Image name: ");
             string imageName = Console.ReadLine();
             string image = path + imageName;
-            
-            using (var filestream = File.OpenRead(image))
-            {
-                blockBlob.UploadFromStream(filestream);
-            }
-            
-            Download(container, path);
+
+
+            Upload(container, image, imageName);
+
+            Console.WriteLine("Ladda ner image, ge namn på filen: ");
+            var name = Console.ReadLine();
+            var outputPath = path + name;
+
+            Download(container, outputPath, imageName);
 
             Console.ReadLine();
 
         }
 
-        static void Download(CloudBlobContainer container, string str)
+        static void Upload(CloudBlobContainer container, string image, string imageName)
         {
-            Console.WriteLine("Ladda ner image, ge namn på filen: ");
-            var namn = Console.ReadLine();
-            var img = str + namn;
-            //The next 6 lines download the file test.txt with the name test.txt from the container "democontainer"
-            CloudBlockBlob blockBlob = container.GetBlockBlobReference("Images");
-            using (var filestream = File.OpenWrite(img))
+            CloudBlockBlob blockBlob = container.GetBlockBlobReference(imageName);
+            try
+            {
+                using (var filestream = File.OpenRead(image))
+                {
+                    blockBlob.UploadFromStream(filestream);
+                }
+            }
+            catch (Exception e)
+            {
+                // Exception
+            }
+        }
+
+        static void Download(CloudBlobContainer container, string outputPath, string blobName)
+        {
+
+            CloudBlockBlob blockBlob = container.GetBlockBlobReference(blobName);
+            using (var filestream = File.OpenWrite(outputPath))
             {
                 blockBlob.DownloadToStream(filestream);
             }
